@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Text System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: #fff5f5;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .header {
+            background: #f9e2e294;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            color: #4b5eAA;
+            font-size: 2rem;
+            margin: 0;
+        }
+        .content-box {
+            background: #fefcbfaf;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 1.5rem;
+        }
+        h3 {
+            color: #6b7280;
+            font-size: 1.2rem;
+            margin: 0 0 1rem 0;
+        }
+        .file-input {
+            display: block;
+            margin: 0 auto 1rem;
+            padding: 10px;
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            background: #f9fafb;
+            color: #6b7280;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.3s ease;
+            margin: 0.5rem;
+        }
+        .button:hover {
+            transform: scale(1.05);
+        }
+        .upload-btn {
+            background: #f472b6;
+        }
+        .upload-btn:hover {
+            background: #ec4899;
+        }
+        .record-btn {
+            background: #60a5fa;
+        }
+        .record-btn:hover {
+            background: #3b82f6;
+        }
+        .stop-btn {
+            background: #f87171;
+        }
+        .stop-btn:hover {
+            background: #ef4444;
+        }
+        .transcribe-btn {
+            background: #34d399;
+        }
+        .transcribe-btn:hover {
+            background: #10b981;
+        }
+        .status {
+            color: #6b7280;
+            margin: 1rem 0;
+        }
+        audio {
+            width: 100%;
+            margin: 1rem 0;
+            border-radius: 10px;
+        }
+        .disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Speech-to-Text System</h1>
+        </div>
+        <div class="content-box">
+            <h3>Upload or Record Audio</h3>
+            <form method="post" action="/transcribe" enctype="multipart/form-data">
+                <input type="file" id="file" name="file" accept=".wav" class="file-input">
+                <button type="submit" class="button upload-btn">Transcribe Uploaded File</button>
+            </form>
+            <button id="recordButton" class="button record-btn">Start Recording</button>
+            <button id="stopButton" class="button stop-btn disabled" disabled>Stop Recording</button>
+            <p id="recordingStatus" class="status"></p>
+            <audio id="audioPlayback" controls style="display: none;"></audio>
+            <button id="transcribeButton" class="button transcribe-btn" style="display: none;">Transcribe Recorded Audio</button>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let recordedBlob;
+        const recordButton = document.getElementById('recordButton');
+        const stopButton = document.getElementById('stopButton');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const audioPlayback = document.getElementById('audioPlayback');
+        const transcribeButton = document.getElementById('transcribeButton');
+
+        recordButton.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                let options = { mimeType: 'audio/webm;codecs=opus' };
+                try {
+                    mediaRecorder = new MediaRecorder(stream, options);
+                } catch (e) {
+                    console.warn("Preferred mimeType not supported, falling back to default:", e);
+                    options = {};
+                    mediaRecorder = new MediaRecorder(stream, options);
+                }
+                console.log("MediaRecorder initialized with mimeType:", mediaRecorder.mimeType);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    console.log("Data available, size:", event.data.size, "type:", event.data.type);
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    } else {
+                        console.warn("Empty audio chunk received");
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    console.log("Recording stopped, audioChunks length:", audioChunks.length);
+                    if (audioChunks.length > 0) {
+                        recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                        console.log("Recorded blob size:", recordedBlob.size, "type:", recordedBlob.type);
+                        const audioUrl = URL.createObjectURL(recordedBlob);
+                        audioPlayback.src = audioUrl;
+                        audioPlayback.style.display = 'block';
+                        transcribeButton.style.display = 'block';
+                    } else {
+                        console.error("No audio chunks recorded");
+                        recordingStatus.textContent = 'Error: No audio data recorded.';
+                        recordingStatus.style.color = '#ef4444';
+                    }
+                };
+
+                mediaRecorder.onerror = (event) => {
+                    console.error("MediaRecorder error:", event.error);
+                    recordingStatus.textContent = 'Recording error: ' + event.error;
+                    recordingStatus.style.color = '#ef4444';
+                };
+
+                mediaRecorder.start(1000);
+                recordButton.disabled = true;
+                recordButton.classList.add('disabled');
+                stopButton.disabled = false;
+                stopButton.classList.remove('disabled');
+                recordingStatus.textContent = 'Recording...';
+                recordingStatus.style.color = '#4b5eAA';
+                console.log("Recording started");
+            } catch (error) {
+                console.error("Error starting recording:", error);
+                recordingStatus.textContent = 'Error starting recording: ' + error.message;
+                recordingStatus.style.color = '#ef4444';
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            recordButton.disabled = false;
+            recordButton.classList.remove('disabled');
+            stopButton.disabled = true;
+            stopButton.classList.add('disabled');
+            recordingStatus.textContent = 'Recording stopped.';
+            recordingStatus.style.color = '#6b7280';
+            console.log("Recording stopped");
+        });
+
+        transcribeButton.addEventListener('click', () => {
+            if (!recordedBlob || recordedBlob.size === 0) {
+                console.error("No recorded audio available to transcribe");
+                recordingStatus.textContent = 'Error: No recorded audio to transcribe.';
+                recordingStatus.style.color = '#ef4444';
+                return;
+            }
+
+            console.log("Transcribing recorded audio, blob size:", recordedBlob.size);
+            const formData = new FormData();
+            formData.append('audio_data', recordedBlob, 'recorded_audio.webm');
+            console.log("FormData prepared, audio_data size:", recordedBlob.size);
+
+            fetch('/transcribe', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log("Fetch response status:", response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.text();
+            })
+            .then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            })
+            .catch(error => {
+                console.error("Error during transcription:", error);
+                recordingStatus.textContent = 'Error during transcription: ' + error.message;
+                recordingStatus.style.color = '#ef4444';
+            });
+        });
+    </script>
+</body>
+</html>

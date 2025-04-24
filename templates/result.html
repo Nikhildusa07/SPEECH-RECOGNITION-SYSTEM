@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcription Result</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: #fff5f5;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .header {
+            background: #f9e2e294;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            color: #4b5eAA;
+            font-size: 2rem;
+            margin: 0;
+        }
+        .content-box {
+            background: #fefcbfa5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 1.5rem;
+        }
+        .content-box p {
+            margin: 0.5rem 0;
+            color: #6b7280;
+            font-size: 1.2rem;
+        }
+        .content-box p strong {
+            color: #4b5eAA;
+        }
+        audio {
+            width: 100%;
+            margin: 1rem 0;
+            border-radius: 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.3s ease;
+            text-decoration: none;
+        }
+        .button:hover {
+            transform: scale(1.05);
+        }
+        .back-btn {
+            background: #f472b6;
+        }
+        .back-btn:hover {
+            background: #ec4899;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Transcription Result</h1>
+        </div>
+
+        <div class="content-box">
+            <p><strong>Transcription:</strong> {{ result['final_transcription'] }}</p>
+        </div>
+
+        <audio controls src="/audio_files/{{ audio_filename }}"></audio>
+        <a href="/" class="button back-btn">Back to Home</a>
+    </div>
+</body>
+</html>
