@@ -6,89 +6,78 @@
     <title>Transcription Result</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-            min-height: 100vh;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
         }
         .container {
-            background: #fff5f5;
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-        }
-        .header {
-            background: #f9e2e294;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
             border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 500px;
+            text-align: center;
+            border: 2px solid #ff9f43;
         }
-        h1 {
-            color: #4b5eAA;
-            font-size: 2rem;
-            margin: 0;
+        h2 {
+            color: #2d3436;
+            font-size: 28px;
+            margin-bottom: 30px;
         }
-        .content-box {
-            background: #fefcbfa5;
-            border-radius: 10px;
+        .result {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2d3436;
             padding: 20px;
-            margin-bottom: 1.5rem;
-        }
-        .content-box p {
-            margin: 0.5rem 0;
-            color: #6b7280;
-            font-size: 1.2rem;
-        }
-        .content-box p strong {
-            color: #4b5eAA;
+            border-radius: 10px;
+            border: 1px solid #6c5ce7;
+            font-size: 16px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: scroll;
+            margin: 15px 0;
         }
         audio {
             width: 100%;
-            margin: 1rem 0;
-            border-radius: 10px;
+            margin: 15px 0;
         }
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: bold;
+        button {
+            background: linear-gradient(135deg, #0984e3, #00cec9);
             color: white;
             border: none;
-            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 16px;
+            border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.1s ease, background-color 0.3s ease;
-            text-decoration: none;
+            transition: background 0.3s ease, transform 0.2s ease;
+            width: 100%;
+            margin: 15px 0;
         }
-        .button:hover {
-            transform: scale(1.05);
-        }
-        .back-btn {
-            background: #f472b6;
-        }
-        .back-btn:hover {
-            background: #ec4899;
+        button:hover {
+            background: linear-gradient(135deg, #00cec9, #0984e3);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Transcription Result</h1>
+        <h2>Transcription Result</h2>
+        <div class="result">
+            {{ result.final_transcription }}
         </div>
-
-        <div class="content-box">
-            <p><strong>Transcription:</strong> {{ result['final_transcription'] }}</p>
-        </div>
-
-        <audio controls src="/audio_files/{{ audio_filename }}"></audio>
-        <a href="/" class="button back-btn">Back to Home</a>
+        <audio controls>
+            <source src="/audio_files/{{ audio_filename }}" type="audio/wav">
+            Your browser does not support the audio element.
+        </audio>
+        <form action="/" method="get">
+            <button type="submit">Back to Upload</button>
+        </form>
     </div>
 </body>
 </html>

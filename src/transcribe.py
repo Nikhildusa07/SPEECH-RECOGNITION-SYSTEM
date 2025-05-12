@@ -1,36 +1,35 @@
 import speech_recognition as sr
-import librosa
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Tokenizer
 from .utils import load_audio
+
+# Load model and processor once
+processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
 
 def transcribe_with_speechrecognition(audio_path):
     recognizer = sr.Recognizer()
     with sr.AudioFile(audio_path) as source:
         audio = recognizer.record(source)
     try:
-        text = recognizer.recognize_google(audio)
-        return text
-    except sr.UnknownValueError:
-        return "SpeechRecognition could not understand the audio."
-    except sr.RequestError as e:
-        return f"SpeechRecognition error: {e}"
+        return recognizer.recognize_google(audio)
+    except Exception:
+        return ""
 
 def transcribe_with_wav2vec2(audio_path):
-    # Placeholder for Wav2Vec2 implementation (requires model loading)
-    # This assumes load_audio returns (audio_data, sample_rate)
-    audio, sample_rate = load_audio(audio_path)
-    # Add Wav2Vec2 model and tokenizer loading here if not already implemented
-    # For now, return a dummy value
-    return "Wav2Vec2 sample transcription"
+    input_values, sample_rate = load_audio(audio_path)
+    with torch.no_grad():
+        logits = model(input_values).logits
+        predicted_ids = torch.argmax(logits, dim=-1)
+    return processor.batch_decode(predicted_ids)[0].lower()
 
 def hybrid_transcription(audio_path):
-    speech_recognition_result = transcribe_with_speechrecognition(audio_path)
-    wav2vec2_result = transcribe_with_wav2vec2(audio_path)
-    final_result = wav2vec2_result if len(wav2vec2_result.split()) > len(speech_recognition_result.split()) else speech_recognition_result
+    sr_result = transcribe_with_speechrecognition(audio_path)
+    wav2vec_result = transcribe_with_wav2vec2(audio_path)
+    final_result = wav2vec_result if len(wav2vec_result) > len(sr_result) else sr_result
     return {
-        "speech_recognition": speech_recognition_result,
-        "wav2vec2": wav2vec2_result,
+        "speech_recognition": sr_result,
+        "wav2vec2": wav2vec_result,
         "final_transcription": final_result,
-        "method_used": "Hybrid (Wav2Vec2 prioritized due to grammar)"
+        "method_used": "Hybrid (best of both)"
     }
