@@ -3,127 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech-To-Text System</title>
+    <title>Speech-To-Text System </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/speech-to-text/0.9.0/speech-to-text.min.js"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: white;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        .container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 500px;
-            text-align: center;
-            border: 2px solid #ff9f43;
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
         }
-        h2 {
-            color: #2d3436;
-            font-size: 28px;
-            margin-bottom: 30px;
-        }
-        button {
-            background: linear-gradient(135deg, #0984e3, #00cec9);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            font-size: 16px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-            width: 100%;
-            margin: 15px 0;
-        }
-        button:hover {
-            background: linear-gradient(135deg, #00cec9, #0984e3);
-            transform: translateY(-2px);
-        }
-        input[type="file"] {
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #10B981;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
             display: none;
         }
-        .upload-btn, .record-btn {
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s ease;
+        .error-message {
+            color: #EF4444;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .animated-bg {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
+            background-size: 400%;
+            animation: gradient 15s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        .dark-mode {
+            background: linear-gradient(45deg, #1a202c, #2d3748, #4a5568, #718096);
             color: white;
-            margin: 15px 0;
         }
-        .upload-btn:hover, .record-btn:hover {
-            transform: translateY(-2px);
+        .dark-mode .bg-white {
+            background: #2d3748;
         }
-        .upload-btn {
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        .dark-mode .text-gray-800 {
+            color: #e2e8f0;
         }
-        .upload-btn:hover {
-            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-        }
-        .record-btn:nth-child(1) {
-            background: linear-gradient(135deg, #e84393, #ff7675);
-        }
-        .record-btn:nth-child(1):hover {
-            background: linear-gradient(135deg, #ff7675, #e84393);
-        }
-        .record-btn:nth-child(2) {
-            background: linear-gradient(135deg, #fdcb6e, #f1c40f);
-        }
-        .record-btn:nth-child(2):hover {
-            background: linear-gradient(135deg, #f1c40f, #fdcb6e);
+        .dark-mode .border-orange-400 {
+            border-color: #ed8936;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Speech-To-Text System</h2>
+<body class="animated-bg min-h-screen flex items-center justify-center p-4 transition-all duration-500">
+    <div class="bg-white bg-opacity-90 p-8 rounded-2xl shadow-lg w-full max-w-md border-2 border-orange-400 transition-all duration-500">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-extrabold text-gray-800">Speech-To-Text</h2>
+            <button onclick="toggleDarkMode()" class="text-gray-600 hover:text-gray-800">
+                <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
+        </div>
+        <p class="text-sm text-gray-600 text-center mb-6">Upload or record audio to transcribe speech instantly. Say "start recording" to begin!</p>
 
-        <form action="/transcribe" method="post" enctype="multipart/form-data">
-            <label class="upload-btn" for="file">Upload Audio</label>
-            <input type="file" id="file" name="file" accept="audio/*">
-            <button type="submit">Transcribe Uploaded</button>
+        <div id="live-transcription" class="text-sm text-gray-500 text-center mb-4 italic">Listening for voice commands...</div>
+
+        <form id="uploadForm" action="/transcribe" method="post" enctype="multipart/form-data">
+            <label class="block w-full bg-gradient-to-r from-purple-500 to-purple-300 text-white py-3 rounded-lg text-center cursor-pointer hover:from-purple-400 hover:to-purple-200 transition-all duration-200 mb-4 pulse">
+                Upload Audio
+                <input type="file" id="file" name="file" accept="audio/*" class="hidden" aria-label="Upload audio file">
+            </label>
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white py-3 rounded-full hover:from-teal-400 hover:to-blue-500 transition-all duration-200">Transcribe Uploaded</button>
         </form>
 
-        <form id="recordForm" method="post" action="/transcribe" enctype="multipart/form-data">
-            <button type="button" class="record-btn" onclick="startRecording()">Start Recording</button>
-            <button type="button" class="record-btn" onclick="stopRecording()">Stop & Transcribe</button>
+        <form id="recordForm" method="post" action="/transcribe" enctype="multipart/form-data" class="mt-4">
+            <button type="button" onclick="startRecording()" class="w-full bg-gradient-to-r from-pink-500 to-red-400 text-white py-3 rounded-lg hover:from-red-400 hover:to-pink-500 transition-all duration-200 mb-2 pulse">Start Recording</button>
+            <button type="button" onclick="stopRecording()" class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-400 transition-all duration-200 mb-2">Stop & Transcribe</button>
             <input type="file" id="audio_data" name="audio_data" hidden>
         </form>
+
+        <div id="spinner" class="spinner mx-auto mt-4"></div>
+        <div id="error" class="error-message hidden"></div>
     </div>
 
     <script>
         let mediaRecorder, audioChunks = [];
+        const errorDiv = document.getElementById("error");
+        const liveTranscriptionDiv = document.getElementById("live-transcription");
+        let recognition;
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove("hidden");
+            setTimeout(() => errorDiv.classList.add("hidden"), 5000);
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            const icon = document.getElementById("theme-icon");
+            if (document.body.classList.contains("dark-mode")) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            }
+        }
 
         function startRecording() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                 mediaRecorder.start();
                 audioChunks = [];
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            }).catch(err => alert("Microphone access denied: " + err));
+                showError("");
+                liveTranscriptionDiv.textContent = "Recording... Speak now!";
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.onresult = event => {
+                    const transcript = Array.from(event.results)
+                        .map(result => result[0].transcript)
+                        .join('');
+                    liveTranscriptionDiv.textContent = `Live: ${transcript}`;
+                };
+                recognition.start();
+            }).catch(err => {
+                showError("Microphone access denied. Please enable it in your browser settings.");
+            });
         }
 
         function stopRecording() {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
+                recognition.stop();
+                document.getElementById("spinner").style.display = "block";
+                liveTranscriptionDiv.textContent = "Processing transcription...";
                 mediaRecorder.onstop = () => {
                     const blob = new Blob(audioChunks, { type: 'audio/webm' });
                     const file = new File([blob], "recording.webm");
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
-                    const fileInput = document.getElementById("audio_data");
-                    fileInput.files = dataTransfer.files;
+                    document.getElementById("audio_data").files = dataTransfer.files;
                     document.getElementById("recordForm").submit();
                 };
+            } else {
+                showError("No recording in progress. Please start recording first.");
             }
         }
+
+        // Voice command recognition
+        const voiceCommandRecognition = new webkitSpeechRecognition();
+        voiceCommandRecognition.continuous = true;
+        voiceCommandRecognition.onresult = event => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0].transcript)
+                .join('')
+                .toLowerCase();
+            if (transcript.includes("start recording")) {
+                startRecording();
+            } else if (transcript.includes("stop recording")) {
+                stopRecording();
+            }
+        };
+        voiceCommandRecognition.start();
     </script>
 </body>
 </html>

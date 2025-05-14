@@ -4,80 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transcription Result</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-bg {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96c93d);
+            background-size: 400%;
+            animation: gradient 15s ease infinite;
+        }
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4ade80, #22d3ee);
+            transition: width 0.5s ease-in-out;
+        }
+        .dark-mode {
+            background: linear-gradient(45deg, #1a202c, #2d3748, #4a5568, #718096);
             color: white;
         }
-        .container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 500px;
-            text-align: center;
-            border: 2px solid #ff9f43;
+        .dark-mode .bg-white {
+            background: #2d3748;
         }
-        h2 {
-            color: #2d3436;
-            font-size: 28px;
-            margin-bottom: 30px;
+        .dark-mode .text-gray-800 {
+            color: #e2e8f0;
         }
-        .result {
-            background: rgba(255, 255, 255, 0.95);
-            color: #2d3436;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #6c5ce7;
-            font-size: 16px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            text-align: left;
-            max-height: 300px;
-            overflow-y: scroll;
-            margin: 15px 0;
+        .dark-mode .border-orange-400 {
+            border-color: #ed8936;
         }
-        audio {
-            width: 100%;
-            margin: 15px 0;
-        }
-        button {
-            background: linear-gradient(135deg, #0984e3, #00cec9);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            font-size: 16px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-            width: 100%;
-            margin: 15px 0;
-        }
-        button:hover {
-            background: linear-gradient(135deg, #00cec9, #0984e3);
-            transform: translateY(-2px);
+        .dark-mode .progress-bar {
+            background: #4a5568;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Transcription Result</h2>
-        <div class="result">
-            {{ result.final_transcription }}
+<body class="animated-bg min-h-screen flex items-center justify-center p-4 transition-all duration-500">
+    <div class="bg-white bg-opacity-90 p-8 rounded-2xl shadow-lg w-full max-w-md border-2 border-orange-400 transition-all duration-500">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-extrabold text-gray-800">Transcription Result</h2>
+            <button onclick="toggleDarkMode()" class="text-gray-600 hover:text-gray-800">
+                <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
         </div>
-        <audio controls>
+        <div class="bg-white p-4 rounded-lg border border-purple-400 text-gray-700 max-h-48 overflow-y-auto mb-4">
+            <p class="font-semibold text-gray-800">Final Transcription:</p>
+            <textarea id="transcription" class="text-sm w-full border-none focus:outline-none resize-none bg-transparent" rows="3">{{ result['final_transcription'] | safe }}</textarea>
+            <button onclick="submitFeedback()" class="text-xs text-blue-500 hover:underline">Submit Correction</button>
+        </div>
+        <div class="text-sm text-gray-600 mb-4 space-y-2">
+            <p><span class="font-semibold">SpeechRecognition:</span> {{ result['speech_recognition'] | safe }}</p>
+            {% if result.get('speech_recognition_confidence', 0.0) > 0 %}
+            <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: {{ result.get('speech_recognition_confidence', 0.0) * 100 }}%"></div>
+            </div>
+            {% else %}
+            <p class="text-xs text-red-500">SpeechRecognition failed to transcribe.</p>
+            {% endif %}
+            <p><span class="font-semibold">Wav2Vec2:</span> {{ result['wav2vec2'] | safe }}</p>
+            {% if result.get('wav2vec2_confidence', 0.0) > 0 %}
+            <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: {{ result.get('wav2vec2_confidence', 0.0) * 100 }}%"></div>
+            </div>
+            {% else %}
+            <p class="text-xs text-red-500">Wav2Vec2 failed to transcribe.</p>
+            {% endif %}
+            <p><span class="font-semibold">Method Used:</span> {{ result['method_used'] | safe }}</p>
+        </div>
+        {% if audio_filename != "unknown.wav" %}
+        <audio controls class="w-full mb-4">
             <source src="/audio_files/{{ audio_filename }}" type="audio/wav">
             Your browser does not support the audio element.
         </audio>
+        {% else %}
+        <p class="text-sm text-gray-600 mb-4">Audio file not available for playback.</p>
+        {% endif %}
         <form action="/" method="get">
-            <button type="submit">Back to Upload</button>
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white py-3 rounded-full hover:from-teal-400 hover:to-blue-500 transition-all duration-200">Back to Upload</button>
         </form>
     </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            const isDarkMode = document.body.classList.contains("dark-mode");
+            localStorage.setItem("darkMode", isDarkMode ? "true" : "false");
+            const icon = document.getElementById("theme-icon");
+            if (isDarkMode) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            }
+        }
+
+        window.onload = function() {
+            const darkMode = localStorage.getItem("darkMode");
+            if (darkMode === "true") {
+                document.body.classList.add("dark-mode");
+                document.getElementById("theme-icon").innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            }
+        };
+
+        function submitFeedback() {
+            const correctedText = document.getElementById("transcription").value;
+            fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ original: "{{ result['final_transcription'] | safe }}", corrected: correctedText })
+            }).then(response => response.json()).then(data => {
+                alert("Thank you for your feedback!");
+            }).catch(error => {
+                alert("Failed to submit feedback. Please try again later.");
+                console.error("Feedback submission failed:", error);
+            });
+        }
+    </script>
 </body>
 </html>
