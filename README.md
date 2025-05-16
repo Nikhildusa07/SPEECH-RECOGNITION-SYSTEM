@@ -47,7 +47,7 @@ Install dependencies using:
 -->pip install -r requirements.txt
 
 
-#output
+#  output
 
 ![Image](https://github.com/user-attachments/assets/5d5b826e-5486-48c7-a8cb-74ebc3df39b4)
 
