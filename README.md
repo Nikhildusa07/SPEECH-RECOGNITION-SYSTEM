@@ -44,5 +44,9 @@ SpeechToTextSystem is a Flask-based web application that converts spoken audio i
 
 Install dependencies using:
 
-```bash
-pip install -r requirements.txt
+-->pip install -r requirements.txt
+
+
+#output
+
+![Image](https://github.com/user-attachments/assets/5d5b826e-5486-48c7-a8cb-74ebc3df39b4)
