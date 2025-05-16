@@ -1,3 +1,21 @@
+# SPEECH-TO-TEXT SYSTEM
+
+*COMPANY*: CODTECH IT SOLUTIONS
+
+*NAME*: DUSANIKHIL
+
+*INTERN ID*: C0DF113
+
+*DOMAIN*: SPEECH RECOGNITION / NATURAL LANGUAGE PROCESSING
+
+*DURATION*: 4 WEEKS
+
+*MENTOR*: NEELA SANTOSH
+
+
+
+
+
 #  Speech to Text System
 
 SpeechToTextSystem is a Flask-based web application that converts spoken audio into accurate text using a hybrid approach combining **Wav2Vec2** (deep learning) and **Google SpeechRecognition** (cloud-based API). Users can upload or record audio directly in the browser and receive fast, reliable transcriptions.
