@@ -1,4 +1,4 @@
-# SPEECH-TO-TEXT SYSTEM
+# SPEECH-RECOGNITION-SYSTEM
 
 *COMPANY*: CODTECH IT SOLUTIONS
 
@@ -16,7 +16,7 @@
 
 
 
-#  SPEECH-TO-TEXT SYSTEM
+#  SPEECH-RECOGNITION-SYSTEM
 
 SpeechToTextSystem is a Flask-based web application that converts spoken audio into accurate text using a hybrid approach combining **Wav2Vec2** (deep learning) and **Google SpeechRecognition** (cloud-based API). Users can upload or record audio directly in the browser and receive fast, reliable transcriptions.
 
