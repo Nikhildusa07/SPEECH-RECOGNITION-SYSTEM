@@ -52,3 +52,5 @@ Install dependencies using:
 ![Image](https://github.com/user-attachments/assets/5d5b826e-5486-48c7-a8cb-74ebc3df39b4)
 
 ![Image](https://github.com/user-attachments/assets/3d7ec7ad-cd4b-4045-8152-b4141385d5ba)
+
+This project was developed as part of Task 2 during my internship at CODTECH IT Solutions
