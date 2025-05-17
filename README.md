@@ -6,7 +6,7 @@
 
 *INTERN ID*: C0DF113
 
-*DOMAIN*: SPEECH RECOGNITION / NATURAL LANGUAGE PROCESSING
+*DOMAIN*:  Artificial Intelligence Markup Language
 
 *DURATION*: 4 WEEKS
 
@@ -16,13 +16,13 @@
 
 
 
-#  SPEECH-RECOGNITION-SYSTEM
+#  DESCRIPTION
 
 SpeechToTextSystem is a Flask-based web application that converts spoken audio into accurate text using a hybrid approach combining **Wav2Vec2** (deep learning) and **Google SpeechRecognition** (cloud-based API). Users can upload or record audio directly in the browser and receive fast, reliable transcriptions.
 
 ---
 
-##  Features
+##  FEATURES
 
 -  Upload or record speech using your browser
 -  Hybrid speech recognition (Wav2Vec2 + Google SpeechRecognition)
@@ -32,7 +32,7 @@ SpeechToTextSystem is a Flask-based web application that converts spoken audio i
 
 ---
 
-##  How It Works
+##  HOW IT WORKS
 
 - **Wav2Vec2**: A transformer-based model trained on large audio datasets for deep learning speech recognition.
 - **Google SpeechRecognition**: Cloud-based API used as a backup or enhancer for improved transcription.
@@ -40,7 +40,7 @@ SpeechToTextSystem is a Flask-based web application that converts spoken audio i
 
 ---
 
-##  Requirements
+##  REQUIREMENTS
 
 Install dependencies using:
 
